@@ -1,0 +1,356 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   ROOT VARIABLES & THEMES
+   ============================================ */
+:root {
+  --color-bg: #0b0e11;
+  --color-card: #1e2329;
+  --color-border: #2b3139;
+  --color-text: #eaecef;
+  --color-muted: #848e9c;
+  --color-success: #0ecb81;
+  --color-danger: #f6465d;
+  --color-warning: #f0b90b;
+  --color-primary: #0ea5e9;
+}
+
+[data-theme="light"] {
+  --color-bg: #f5f5f5;
+  --color-card: #ffffff;
+  --color-border: #e0e0e0;
+  --color-text: #1e2329;
+  --color-muted: #707a8a;
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-card);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+.font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+}
+
+/* ============================================
+   COMPONENT STYLES
+   ============================================ */
+
+/* Card */
+.card {
+  @apply bg-exchange-card border border-exchange-border rounded-lg;
+  transition: border-color 0.2s ease;
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Buttons */
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200
+         disabled:opacity-50 disabled:cursor-not-allowed
+         active:scale-[0.98] select-none;
+}
+
+.btn-primary {
+  @apply bg-primary-600 hover:bg-primary-700 text-white;
+}
+
+.btn-success {
+  @apply bg-success hover:brightness-110 text-white;
+}
+
+.btn-danger {
+  @apply bg-danger hover:brightness-110 text-white;
+}
+
+.btn-outline {
+  @apply border border-exchange-border hover:bg-exchange-border text-exchange-text;
+}
+
+.btn-ghost {
+  @apply hover:bg-exchange-bg text-exchange-muted hover:text-exchange-text;
+}
+
+.btn-sm {
+  @apply px-3 py-1.5 text-sm;
+}
+
+.btn-lg {
+  @apply px-6 py-3 text-lg;
+}
+
+/* Inputs */
+.input {
+  @apply w-full px-3 py-2.5 bg-exchange-bg border border-exchange-border rounded-lg
+         text-exchange-text placeholder-exchange-muted
+         focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20
+         transition-all duration-200;
+}
+
+.input-error {
+  @apply border-danger focus:border-danger focus:ring-danger/20;
+}
+
+/* Select */
+.select {
+  @apply input appearance-none cursor-pointer
+         bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg%20xmlns%3d%22http%3a%2f%2fwww.w3.org%2f2000%2fsvg%22%20width%3d%2224%22%20height%3d%2224%22%20viewBox%3d%220%200%2024%2024%22%20fill%3d%22none%22%20stroke%3d%22%23848e9c%22%20stroke-width%3d%222%22%20stroke-linecap%3d%22round%22%20stroke-linejoin%3d%22round%22%3e%3cpolyline%20points%3d%226%209%2012%2015%2018%209%22%3e%3c%2fpolyline%3e%3c%2fsvg%3e')]
+         bg-[length:20px] bg-[right_8px_center] bg-no-repeat pr-10;
+}
+
+/* ============================================
+   TRADING SPECIFIC STYLES
+   ============================================ */
+
+/* Price colors */
+.price-up, .text-success {
+  color: var(--color-success);
+}
+
+.price-down, .text-danger {
+  color: var(--color-danger);
+}
+
+/* Order book */
+.orderbook-row {
+  position: relative;
+  transition: background-color 0.15s ease;
+}
+
+.orderbook-row .depth-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.15;
+  transition: width 0.3s ease;
+}
+
+.orderbook-row.bid .depth-bar {
+  background-color: var(--color-success);
+}
+
+.orderbook-row.ask .depth-bar {
+  background-color: var(--color-danger);
+}
+
+.orderbook-row:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-green {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: rgba(14, 203, 129, 0.2); }
+}
+
+@keyframes pulse-red {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: rgba(246, 70, 93, 0.2); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-slideDown {
+  animation: slideDown 0.3s ease-out;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.flash-green {
+  animation: pulse-green 0.5s ease-in-out;
+}
+
+.flash-red {
+  animation: pulse-red 0.5s ease-in-out;
+}
+
+/* ============================================
+   RESPONSIVE UTILITIES
+   ============================================ */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+.skeleton {
+  @apply bg-exchange-border rounded animate-pulse;
+}
+
+.loading-spinner {
+  @apply w-5 h-5 border-2 border-exchange-border border-t-primary-500 rounded-full animate-spin;
+}
+
+/* ============================================
+   TOOLTIPS
+   ============================================ */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem 0.75rem;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 50;
+  animation: fadeIn 0.15s ease-out;
+}
+
+/* ============================================
+   TABLE STYLES
+   ============================================ */
+.table-container {
+  @apply overflow-x-auto;
+}
+
+.table {
+  @apply w-full;
+}
+
+.table th {
+  @apply text-left p-4 text-exchange-muted text-sm font-medium;
+}
+
+.table td {
+  @apply p-4 text-exchange-text;
+}
+
+.table tr {
+  @apply border-t border-exchange-border;
+}
+
+.table tr:hover {
+  @apply bg-exchange-bg;
+}
+
+/* ============================================
+   BADGE STYLES
+   ============================================ */
+.badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+}
+
+.badge-success {
+  @apply bg-success/20 text-success;
+}
+
+.badge-danger {
+  @apply bg-danger/20 text-danger;
+}
+
+.badge-warning {
+  @apply bg-warning/20 text-warning;
+}
+
+.badge-primary {
+  @apply bg-primary-500/20 text-primary-400;
+}
+
+.badge-neutral {
+  @apply bg-exchange-bg text-exchange-muted;
+}
