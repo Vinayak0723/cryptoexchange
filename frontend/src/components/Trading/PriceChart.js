@@ -1,39 +1,207 @@
-import React from 'react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+/**
+ * PriceChart Component
+ * ====================
+ * Candlestick chart using lightweight-charts
+ */
+
+import React, { useEffect, useRef, useState } from 'react';
+
+const TIMEFRAMES = [
+  { label: '1m', value: '1m', seconds: 60 },
+  { label: '5m', value: '5m', seconds: 300 },
+  { label: '15m', value: '15m', seconds: 900 },
+  { label: '1H', value: '1h', seconds: 3600 },
+  { label: '4H', value: '4h', seconds: 14400 },
+  { label: '1D', value: '1d', seconds: 86400 },
+];
 
 const PriceChart = ({ currentPair, ticker }) => {
-  // Generate mock chart data for demo
-  // In production, you would fetch real OHLCV data
-  const generateMockData = () => {
-    const data = [];
-    const basePrice = parseFloat(ticker?.last_price || currentPair?.last_price || 100);
-    const now = Date.now();
+  const chartContainerRef = useRef(null);
+  const chartInstanceRef = useRef(null);
+  const candleSeriesRef = useRef(null);
+  const volumeSeriesRef = useRef(null);
+  const [selectedTimeframe, setSelectedTimeframe] = useState('1h');
 
-    for (let i = 24; i >= 0; i--) {
-      const randomChange = (Math.random() - 0.5) * 0.02; // ±1% change
-      const price = basePrice * (1 + randomChange * (i / 24));
-      data.push({
-        time: new Date(now - i * 3600000).toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }),
-        price: price.toFixed(2),
+  const symbol = currentPair?.symbol?.replace('_', '/') || 'BTC/USDT';
+  const basePrice = parseFloat(ticker?.last_price || currentPair?.last_price || 45000);
+
+  // Generate mock data
+  const generateData = (timeframe, price) => {
+    const candles = [];
+    const volumes = [];
+    const now = Math.floor(Date.now() / 1000);
+    const tf = TIMEFRAMES.find(t => t.value === timeframe);
+    const interval = tf?.seconds || 3600;
+
+    let currentPrice = price * 0.98;
+
+    for (let i = 100; i >= 0; i--) {
+      const time = now - (i * interval);
+      const volatility = price * 0.003;
+      const change = (Math.random() - 0.48) * volatility * 2;
+
+      const open = currentPrice;
+      const close = open + change;
+      const high = Math.max(open, close) + Math.random() * volatility;
+      const low = Math.min(open, close) - Math.random() * volatility;
+
+      candles.push({
+        time,
+        open: Number(open.toFixed(2)),
+        high: Number(high.toFixed(2)),
+        low: Number(low.toFixed(2)),
+        close: Number(close.toFixed(2)),
       });
+
+      volumes.push({
+        time,
+        value: Math.floor(Math.random() * 500000) + 100000,
+        color: close >= open ? 'rgba(14, 203, 129, 0.5)' : 'rgba(246, 70, 93, 0.5)',
+      });
+
+      currentPrice = close;
     }
-    return data;
+
+    return { candles, volumes };
   };
 
-  const data = generateMockData();
-  const priceChange = ticker?.price_change_24h ? parseFloat(ticker.price_change_24h) : 0;
-  const chartColor = priceChange >= 0 ? '#0ecb81' : '#f6465d';
+  // Initialize chart
+  useEffect(() => {
+    let chart = null;
+    let candleSeries = null;
+    let volumeSeries = null;
+    let isDisposed = false;
+
+    const initChart = async () => {
+      if (!chartContainerRef.current || isDisposed) return;
+
+      try {
+        const LWC = await import('lightweight-charts');
+
+        if (isDisposed || !chartContainerRef.current) return;
+
+        // Create chart
+        chart = LWC.createChart(chartContainerRef.current, {
+          layout: {
+            background: { color: '#0b0e11' },
+            textColor: '#848e9c',
+          },
+          grid: {
+            vertLines: { color: '#1e2329' },
+            horzLines: { color: '#1e2329' },
+          },
+          width: chartContainerRef.current.clientWidth,
+          height: 300,
+          rightPriceScale: { borderColor: '#2b3139' },
+          timeScale: {
+            borderColor: '#2b3139',
+            timeVisible: true,
+          },
+        });
+
+        chartInstanceRef.current = chart;
+
+        // Try different APIs based on version
+        if (typeof chart.addCandlestickSeries === 'function') {
+          // v3 API
+          candleSeries = chart.addCandlestickSeries({
+            upColor: '#0ecb81',
+            downColor: '#f6465d',
+            borderUpColor: '#0ecb81',
+            borderDownColor: '#f6465d',
+            wickUpColor: '#0ecb81',
+            wickDownColor: '#f6465d',
+          });
+
+          volumeSeries = chart.addHistogramSeries({
+            color: '#0ecb81',
+            priceFormat: { type: 'volume' },
+            priceScaleId: '',
+            scaleMargins: { top: 0.8, bottom: 0 },
+          });
+        } else if (LWC.CandlestickSeries) {
+          // v4 API
+          candleSeries = chart.addSeries(LWC.CandlestickSeries, {
+            upColor: '#0ecb81',
+            downColor: '#f6465d',
+            borderUpColor: '#0ecb81',
+            borderDownColor: '#f6465d',
+            wickUpColor: '#0ecb81',
+            wickDownColor: '#f6465d',
+          });
+
+          volumeSeries = chart.addSeries(LWC.HistogramSeries, {
+            color: '#0ecb81',
+            priceFormat: { type: 'volume' },
+            priceScaleId: 'volume',
+          });
+          volumeSeries.priceScale().applyOptions({
+            scaleMargins: { top: 0.8, bottom: 0 },
+          });
+        }
+
+        candleSeriesRef.current = candleSeries;
+        volumeSeriesRef.current = volumeSeries;
+
+        // Load data
+        const { candles, volumes } = generateData(selectedTimeframe, basePrice);
+        if (candleSeries) candleSeries.setData(candles);
+        if (volumeSeries) volumeSeries.setData(volumes);
+
+        chart.timeScale().fitContent();
+
+        // Handle resize
+        const resizeHandler = () => {
+          if (chart && chartContainerRef.current && !isDisposed) {
+            chart.applyOptions({
+              width: chartContainerRef.current.clientWidth
+            });
+          }
+        };
+
+        window.addEventListener('resize', resizeHandler);
+
+        // Store cleanup reference
+        chartInstanceRef.current = { chart, resizeHandler };
+
+      } catch (error) {
+        console.error('Chart init error:', error);
+      }
+    };
+
+    initChart();
+
+    return () => {
+      isDisposed = true;
+      if (chartInstanceRef.current) {
+        const { chart, resizeHandler } = chartInstanceRef.current;
+        if (resizeHandler) {
+          window.removeEventListener('resize', resizeHandler);
+        }
+        if (chart) {
+          try {
+            chart.remove();
+          } catch (e) {
+            // Ignore disposal errors
+          }
+        }
+        chartInstanceRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update on timeframe change
+  useEffect(() => {
+    if (!candleSeriesRef.current || !volumeSeriesRef.current) return;
+
+    const { candles, volumes } = generateData(selectedTimeframe, basePrice);
+    candleSeriesRef.current.setData(candles);
+    volumeSeriesRef.current.setData(volumes);
+
+    if (chartInstanceRef.current?.chart) {
+      chartInstanceRef.current.chart.timeScale().fitContent();
+    }
+  }, [selectedTimeframe, basePrice]);
 
   const formatPrice = (price) => {
     if (!price) return '-';
@@ -46,92 +214,67 @@ const PriceChart = ({ currentPair, ticker }) => {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-lg font-medium text-exchange-text">
-            {currentPair?.symbol?.replace('_', '/') || 'Price Chart'}
-          </h3>
-          <p className="text-xs text-exchange-muted">24h Price Movement (Demo Data)</p>
+          <h3 className="text-lg font-medium text-white">{symbol}</h3>
+          <p className="text-xs text-gray-500">24h Price Movement (Demo Data)</p>
         </div>
         <div className="text-right">
-          <div className="text-sm text-exchange-muted">24h High / Low</div>
+          <div className="text-sm text-gray-500">24h High / Low</div>
           <div className="text-sm">
-            <span className="text-success">{formatPrice(ticker?.high_24h || currentPair?.high_24h)}</span>
-            <span className="text-exchange-muted mx-2">/</span>
-            <span className="text-danger">{formatPrice(ticker?.low_24h || currentPair?.low_24h)}</span>
+            <span className="text-green-400">{formatPrice(ticker?.high_24h || currentPair?.high_24h)}</span>
+            <span className="text-gray-500 mx-2">/</span>
+            <span className="text-red-400">{formatPrice(ticker?.low_24h || currentPair?.low_24h)}</span>
           </div>
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="flex-1 min-h-0">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={chartColor} stopOpacity={0.3} />
-                <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <XAxis
-              dataKey="time"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#848e9c', fontSize: 10 }}
-              interval="preserveStartEnd"
-            />
-            <YAxis
-              domain={['auto', 'auto']}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#848e9c', fontSize: 10 }}
-              width={60}
-              tickFormatter={(value) => value.toLocaleString()}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#1e2329',
-                border: '1px solid #2b3139',
-                borderRadius: '8px',
-              }}
-              labelStyle={{ color: '#848e9c' }}
-              itemStyle={{ color: '#eaecef' }}
-              formatter={(value) => [`$${parseFloat(value).toLocaleString()}`, 'Price']}
-            />
-            <Area
-              type="monotone"
-              dataKey="price"
-              stroke={chartColor}
-              strokeWidth={2}
-              fill="url(#priceGradient)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+      {/* Timeframe Selector */}
+      <div className="flex items-center gap-1 mb-3">
+        {TIMEFRAMES.map((tf) => (
+          <button
+            key={tf.value}
+            onClick={() => setSelectedTimeframe(tf.value)}
+            className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+              selectedTimeframe === tf.value
+                ? 'bg-yellow-500 text-black'
+                : 'text-gray-400 hover:text-white hover:bg-gray-700'
+            }`}
+          >
+            {tf.label}
+          </button>
+        ))}
       </div>
 
+      {/* Chart */}
+      <div
+        ref={chartContainerRef}
+        style={{ minHeight: '300px', width: '100%' }}
+      />
+
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-exchange-border">
+      <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-700">
         <div>
-          <div className="text-xs text-exchange-muted">24h Volume</div>
-          <div className="text-sm font-mono text-exchange-text">
+          <div className="text-xs text-gray-500">24h Volume</div>
+          <div className="text-sm font-mono text-white">
             {parseFloat(ticker?.volume_24h || currentPair?.volume_24h || 0).toFixed(2)}
           </div>
         </div>
         <div>
-          <div className="text-xs text-exchange-muted">Best Bid</div>
-          <div className="text-sm font-mono text-success">
+          <div className="text-xs text-gray-500">Best Bid</div>
+          <div className="text-sm font-mono text-green-400">
             {formatPrice(ticker?.best_bid)}
           </div>
         </div>
         <div>
-          <div className="text-xs text-exchange-muted">Best Ask</div>
-          <div className="text-sm font-mono text-danger">
+          <div className="text-xs text-gray-500">Best Ask</div>
+          <div className="text-sm font-mono text-red-400">
             {formatPrice(ticker?.best_ask)}
           </div>
         </div>
         <div>
-          <div className="text-xs text-exchange-muted">Spread</div>
-          <div className="text-sm font-mono text-exchange-text">
+          <div className="text-xs text-gray-500">Spread</div>
+          <div className="text-sm font-mono text-white">
             {ticker?.spread || '-'}
           </div>
         </div>
