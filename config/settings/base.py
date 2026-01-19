@@ -365,3 +365,19 @@ LOGGING = {
         },
     },
 }
+# Security App
+INSTALLED_APPS += ['security']
+
+# Rate Limiting Middleware
+MIDDLEWARE += [
+    'security.middleware.RateLimitMiddleware',
+    'security.middleware.SecurityHeadersMiddleware',
+]
+
+# Security Settings
+SESSION_COOKIE_AGE = 86400  # 24 hours
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+]
