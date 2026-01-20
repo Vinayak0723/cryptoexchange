@@ -14,6 +14,7 @@ import WalletPage from './pages/WalletPage';
 import OrdersPage from './pages/OrdersPage';
 import SettingsPage from './pages/SettingsPage';
 import AdminPage from './pages/AdminPage';
+import SecurityPage from './pages/SecurityPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -81,6 +82,7 @@ function App() {
           <Route path="wallet" element={<WalletPage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="security" element={<SecurityPage />} />
           <Route path="admin" element={
             <AdminRoute>
               <AdminPage />

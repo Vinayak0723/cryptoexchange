@@ -28,12 +28,13 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { path: '/trade', label: 'Trade', icon: ChartBarIcon },
-    { path: '/wallet', label: 'Wallet', icon: WalletIcon },
-    { path: '/orders', label: 'Orders', icon: ClipboardDocumentListIcon },
-    { path: '/settings', label: 'Settings', icon: Cog6ToothIcon },
-    ...(user?.is_staff ? [{ path: '/admin', label: 'Admin', icon: ShieldCheckIcon }] : []),
-  ];
+  { path: '/trade', label: 'Trade', icon: ChartBarIcon },
+  { path: '/wallet', label: 'Wallet', icon: WalletIcon },
+  { path: '/orders', label: 'Orders', icon: ClipboardDocumentListIcon },
+  { path: '/security', label: 'Security', icon: ShieldCheckIcon },
+  { path: '/settings', label: 'Settings', icon: Cog6ToothIcon },
+  ...(user?.is_staff ? [{ path: '/admin', label: 'Admin', icon: ShieldCheckIcon }] : []),
+];
 
   const NavLink = ({ item, mobile = false }) => {
     const Icon = item.icon;
