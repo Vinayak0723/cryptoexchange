@@ -17,7 +17,6 @@ from .views import (
     UserProfileView,
     UserWalletsView,
     ChangePasswordView,
-    SetPasswordView,
 )
 
 app_name = 'accounts'
@@ -39,5 +38,4 @@ urlpatterns = [
     path('profile/', UserProfileView.as_view(), name='profile'),
     path('wallets/', UserWalletsView.as_view(), name='user_wallets'),
     path('change-password/', ChangePasswordView.as_view(), name='change_password'),
-    path('set-password/', SetPasswordView.as_view(), name='set_password'),
 ]
