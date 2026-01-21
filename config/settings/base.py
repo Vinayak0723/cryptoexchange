@@ -400,3 +400,10 @@ EMAIL_SUBJECT_PREFIX = '[CryptoExchange] '
 
 # Frontend URL for email links
 FRONTEND_URL = 'http://localhost:3000'
+
+# Override ALLOWED_HOSTS to include Railway domain
+import os
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
+# Also allow any .railway.app subdomain
+if '.railway.app' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('.railway.app')
