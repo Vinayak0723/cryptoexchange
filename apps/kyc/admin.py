@@ -4,21 +4,21 @@ from .models import KYCLevel, KYCProfile, KYCDocument, KYCVerificationRequest, K
 
 @admin.register(KYCLevel)
 class KYCLevelAdmin(admin.ModelAdmin):
-    list_display = ['name', 'level', 'daily_withdrawal_limit', 'can_trade', 'can_withdraw_crypto']
+    list_display = ['name', 'level', 'daily_withdrawal_limit', 'can_trade', 'can_withdraw_crypto', 'can_withdraw_fiat']
     list_filter = ['can_trade', 'can_withdraw_crypto', 'can_withdraw_fiat']
 
 
 @admin.register(KYCProfile)
 class KYCProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'status', 'current_level', 'created_at']
+    list_display = ['user', 'status', 'current_level', 'first_name', 'last_name', 'created_at']
     list_filter = ['status', 'current_level']
     search_fields = ['user__email', 'first_name', 'last_name']
-    readonly_fields = ['id', 'created_at', 'updated_at']
+    readonly_fields = ['id', 'created_at', 'updated_at', 'verified_at']
 
 
 @admin.register(KYCDocument)
 class KYCDocumentAdmin(admin.ModelAdmin):
-    list_display = ['kyc_profile', 'document_type', 'status', 'created_at']
+    list_display = ['kyc_profile', 'document_type', 'status', 'uploaded_at', 'reviewed_at']
     list_filter = ['document_type', 'status']
     search_fields = ['kyc_profile__user__email']
 

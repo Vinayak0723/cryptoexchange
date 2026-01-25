@@ -58,7 +58,6 @@ LOCAL_APPS = [
     'apps.trading',
     'apps.blockchain',
     'apps.audit',
-    'apps.core',
 
 ]
 
@@ -343,46 +342,37 @@ LOGS_DIR.mkdir(exist_ok=True)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-        'file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': LOGS_DIR / 'django.log',
-            'maxBytes': 10485760,
-            'backupCount': 5,
-            'formatter': 'verbose',
         },
     },
     'loggers': {
-        'django': {
+        'security': {
             'handlers': ['console'],
             'level': 'INFO',
-        },
-        'apps': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
         },
     },
 }
 # Security App
-INSTALLED_APPS += ['security']
-INSTALLED_APPS += ['emails']
-INSTALLED_APPS += ['apps.kyc']
+INSTALLED_APPS += ['security','emails','apps.kyc','apps.payments','apps.core',]
+
 
 
 # Rate Limiting Middleware
 MIDDLEWARE += [
-    'security.middleware.RateLimitMiddleware',
-    'security.middleware.SecurityHeadersMiddleware',
+    # ... existing middleware ...
+
+    # Add these at the end (or after SecurityMiddleware):
+    'apps.core.middleware.MaintenanceModeMiddleware',
+    'apps.core.middleware.TradingEnabledMiddleware',
+    'apps.core.middleware.WithdrawalsEnabledMiddleware',
+    'apps.core.middleware.DepositsEnabledMiddleware',
+    'apps.core.security_middleware.SecurityHeadersMiddleware',
+    'apps.core.security_middleware.RateLimitMiddleware',
+    'apps.core.security_middleware.SQLInjectionProtectionMiddleware',
+    'apps.core.security_middleware.RequestLoggingMiddleware',
+    'apps.core.ip_blocker.IPBlockMiddleware',
 ]
 
 # Security Settings
@@ -411,3 +401,31 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 # Also allow any .railway.app subdomain
 if '.railway.app' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('.railway.app')
+
+# ============================================
+# PRODUCTION MODE SETTINGS
+# ============================================
+import os
+
+# Set to False to enable real transactions
+DEMO_MODE = os.environ.get('DEMO_MODE', 'false').lower() == 'true'
+
+# When DEMO_MODE is False:
+# - Real Razorpay payments are processed
+# - Real blockchain transactions are sent
+# - Real balance changes occur
+# - No demo banners are shown
+
+# Trading settings
+TRADING_ENABLED = os.environ.get('TRADING_ENABLED', 'true').lower() == 'true'
+WITHDRAWALS_ENABLED = os.environ.get('WITHDRAWALS_ENABLED', 'true').lower() == 'true'
+DEPOSITS_ENABLED = os.environ.get('DEPOSITS_ENABLED', 'true').lower() == 'true'
+
+# Maintenance mode
+MAINTENANCE_MODE = os.environ.get('MAINTENANCE_MODE', 'false').lower() == 'true'
+MAINTENANCE_MESSAGE = os.environ.get('MAINTENANCE_MESSAGE', 'System is under maintenance. Please try again later.')
+
+# Add these to MIDDLEWARE list:
+# 'apps.core.middleware.MaintenanceModeMiddleware',
+# 'apps.core.middleware.TradingEnabledMiddleware',
+# 'apps.core.middleware.WithdrawalsEnabledMiddleware',

@@ -14,6 +14,9 @@ urlpatterns = [
 
     # Health check endpoint
     path("api/v1/health/", health_check, name="health_check"),
+    path('api/v1/kyc/', include('apps.kyc.urls')),
+    path('api/v1/payments/', include('apps.payments.urls')),
+    path('api/v1/', include('apps.core.urls')),
 
     # API endpoints
     path("api/v1/auth/", include("apps.accounts.urls")),

@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 
-class KycConfig(AppConfig):
+class PaymentsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.kyc'
-    verbose_name = 'KYC/AML Compliance'
+    name = 'apps.payments'
+    verbose_name = 'Payments'
