@@ -55,13 +55,7 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
-        # Send welcome email notification
-        try:
-            from emails.services import EmailService
-            EmailService.send_welcome_email(user)
-            logger.info(f"Welcome email sent to {user.email}")
-        except Exception as e:
-            logger.error(f"Failed to send welcome email to {user.email}: {e}")
+        # Email disabled
         
         tokens = get_tokens_for_user(user)
         return Response({
@@ -147,11 +141,7 @@ class ChangePasswordView(APIView):
         
         # Send password changed notification
         try:
-            from emails.notifications import notify_password_changed
-            notify_password_changed(user)
-            logger.info(f"Password changed email sent to {user.email}")
-        except Exception as e:
-            logger.error(f"Failed to send password changed email to {user.email}: {e}")
+            pass
         
         return Response({
             'message': 'Password changed successfully'
