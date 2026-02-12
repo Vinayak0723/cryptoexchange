@@ -83,13 +83,8 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         
-        # Send login alert email notification
-        try:
-            from emails.notifications import notify_login
-            notify_login(user, request)
-            logger.info(f"Login alert sent to {user.email}")
-        except Exception as e:
-            logger.error(f"Failed to send login alert to {user.email}: {e}")
+        # Email notifications disabled for now
+        pass
         
         tokens = get_tokens_for_user(user)
         return Response({
