@@ -74,6 +74,11 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 # CORS
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'https://.*\.vercel\.app',
+    r'https://.*\.tokenly\.com',
+]
 CORS_ALLOWED_ORIGINS = [
     'https://cryptoexchange-gilt.vercel.app',
     'https://cryptoexchange-ap9bpi2ug-osamas-projects-85e1d3c3.vercel.app',
