@@ -139,9 +139,7 @@ class ChangePasswordView(APIView):
         user.set_password(serializer.validated_data['new_password'])
         user.save()
         
-        # Send password changed notification
-        try:
-            pass
+        # Send password changed notification - disabled
         
         return Response({
             'message': 'Password changed successfully'
