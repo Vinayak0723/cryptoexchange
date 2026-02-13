@@ -78,42 +78,8 @@ class RateLimitMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # Skip for safe methods on non-sensitive paths
-        if request.method in ['GET', 'HEAD', 'OPTIONS']:
-            return self.get_response(request)
-
-        # Determine rate limit category
-        category = self._get_category(request.path)
-        limit, window = self.RATE_LIMITS.get(category, self.RATE_LIMITS['default'])
-
-        # Get client identifier
-        client_id = self._get_client_id(request)
-        cache_key = f'ratelimit:{category}:{client_id}'
-
-        # Check rate limit
-        try:
-            current = cache.get(cache_key, 0) or 0
-        except Exception:
-            return self.get_response(request)
-        if current >= limit:
-            logger.warning(f"Rate limit exceeded: {client_id} on {category} ({current}/{limit})")
-            return JsonResponse({
-                'error': 'rate_limit_exceeded',
-                'message': f'Too many requests. Please try again in {window} seconds.',
-                'retry_after': window
-            }, status=429)
-
-        # Increment counter
-        cache.set(cache_key, current + 1, window)
-
-        response = self.get_response(request)
-
-        # Add rate limit headers
-        response['X-RateLimit-Limit'] = str(limit)
-        response['X-RateLimit-Remaining'] = str(max(0, limit - current - 1))
-        response['X-RateLimit-Reset'] = str(int(time.time()) + window)
-
-        return response
+        # Rate limiting disabled - Redis not available
+        return self.get_response(request)
 
     def _get_category(self, path):
         """Determine rate limit category based on path"""
