@@ -58,17 +58,17 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
-
-        user = authenticate(username=email, password=password)
-
-        if not user:
+        from apps.accounts.models import User as UserModel
+        try:
+            user = UserModel.objects.get(email=email)
+            if not user.check_password(password):
+                raise serializers.ValidationError('Invalid email or password.')
+            if not user.is_active:
+                raise serializers.ValidationError('Account is disabled.')
+            attrs['user'] = user
+            return attrs
+        except UserModel.DoesNotExist:
             raise serializers.ValidationError('Invalid email or password.')
-
-        if not user.is_active:
-            raise serializers.ValidationError('Account is disabled.')
-
-        attrs['user'] = user
-        return attrs
 
 
 class WalletConnectionSerializer(serializers.ModelSerializer):
