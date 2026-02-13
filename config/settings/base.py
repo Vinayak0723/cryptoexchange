@@ -164,8 +164,8 @@ AUTH_USER_MODEL = 'accounts.User'
 # PASSWORD VALIDATION
 # =============================================================================
 PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.Argon2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -382,8 +382,8 @@ MIDDLEWARE += [
 SESSION_COOKIE_AGE = 86400  # 24 hours
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.Argon2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 
 # ==================== Email Configuration ====================
