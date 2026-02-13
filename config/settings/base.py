@@ -432,3 +432,10 @@ MAINTENANCE_MESSAGE = os.environ.get('MAINTENANCE_MESSAGE', 'System is under mai
 # 'apps.core.middleware.MaintenanceModeMiddleware',
 # 'apps.core.middleware.TradingEnabledMiddleware',
 # 'apps.core.middleware.WithdrawalsEnabledMiddleware',
+
+
+# Custom authentication backend for email-based login
+AUTHENTICATION_BACKENDS = [
+    'apps.accounts.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
