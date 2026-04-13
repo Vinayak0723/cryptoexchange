@@ -1,0 +1,42 @@
+services:
+  # Web Service
+  - type: web
+    name: cryptoexchange-api
+    runtime: python
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: PYTHON_VERSION
+        value: 3.11.7
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cryptoexchange-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: cryptoexchange-redis
+          type: redis
+          property: connectionString
+    autoDeploy: true
+    healthCheckPath: /api/v1/health/
+
+  # Redis
+  - type: redis
+    name: cryptoexchange-redis
+    ipAllowList: []  # Allow only from Render services
+    plan: free
+
+databases:
+  # PostgreSQL
+  - name: cryptoexchange-db
+    plan: free
+    databaseName: cryptoexchange
+    user: cryptouser
