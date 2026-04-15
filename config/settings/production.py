@@ -74,10 +74,12 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 # CORS
-CORS_ORIGIN_ALLOW_ALL = False
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r'https://.*\.vercel\.app',
-    r'https://.*\.tokenly\.com',
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    'https://tokenly-frontend.onrender.com',
+    'https://tokenly.net.in',
+    'http://localhost:3000',
 ]
 CORS_ALLOWED_ORIGINS = [
     'https://cryptoexchange-gilt.vercel.app',
