@@ -1,4 +1,5 @@
 
+
 # Production dependencies
 psycopg2-binary>=2.9.9
 Pillow>=10.0.0
